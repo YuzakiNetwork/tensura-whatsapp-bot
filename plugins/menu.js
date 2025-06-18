@@ -6,14 +6,16 @@ export default {
     category: 'main',
     cooldown: 5,
     description: 'Menampilkan menu perintah yang tersedia.',
+    
     async execute(m) {
-        const { commands, prefix, settings, args } = m;
+        const { commands, prefix, settings, args } = m; 
+        
         const botName = settings.botName;
         const senderName = m.msg.pushName || 'Petualang';
-        
+
         const categories = {};
         const processedCommands = new Set();
-        
+
         commands.forEach(plugin => {
             if (plugin.hidden || processedCommands.has(plugin.command[0])) {
                 return;
@@ -27,7 +29,7 @@ export default {
         
         const requestedCategory = args[0]?.toLowerCase();
         let menuText = `Halo *${senderName}*!\nSelamat datang di *${botName}*.\n\n`;
-        
+
         if (requestedCategory && categories[requestedCategory]) {
             menuText += `*Kategori: ${requestedCategory.toUpperCase()}*\n\n`;
             categories[requestedCategory].forEach(cmd => {
@@ -49,7 +51,7 @@ export default {
             });
             menuText += `\nKetik *${prefix}menu all* untuk melihat semua perintah atau *${prefix}menu <kategori>* untuk detail spesifik.`;
         }
-        
+
         await m.reply(menuText.trim());
     }
 };

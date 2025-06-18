@@ -5,9 +5,8 @@ import { readdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import settings from './settings.js';
 import { readDB } from './lib/database.js';
-
-// --- GAYA IMPOR BARU UNTUK BAILEYS ---
 import * as baileys from '@whiskeysockets/baileys';
+
 const {
   makeWASocket,
   useMultiFileAuthState,
@@ -15,7 +14,6 @@ const {
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore
 } = baileys;
-// ------------------------------------
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +23,6 @@ const commands = new Map();
 const cooldowns = new Map();
 const FOLDER_PLUGINS = path.join(__dirname, 'plugins');
 
-// ... (Fungsi loadPlugins tetap sama) ...
 async function loadPlugins() {
     const pluginFiles = readdirSync(FOLDER_PLUGINS).filter(file => file.endsWith('.js'));
     console.log(`[INFO] Ditemukan ${pluginFiles.length} plugin.`);
@@ -107,10 +104,7 @@ async function connectToWhatsApp() {
         const command = commands.get(commandName);
         if (!command) return;
 
-        if (command.hidden) {
-            console.log(`[BLOCKED] Command '${commandName}' is hidden.`);
-            return;
-        }
+        if (command.hidden) return;
 
         const isGroup = msg.key.remoteJid.endsWith('@g.us');
         const sender = isGroup ? msg.key.participant : msg.key.remoteJid;
@@ -138,7 +132,6 @@ async function connectToWhatsApp() {
             const cooldownKey = `${sender}-${commandName}`;
             const now = Date.now();
             const expirationTime = cooldowns.get(cooldownKey) || 0;
-
             if (now < expirationTime) {
                 const timeLeft = Math.ceil((expirationTime - now) / 1000);
                 await sock.sendMessage(msg.key.remoteJid, { text: `Tunggu ${timeLeft} detik lagi.` }, { quoted: msg });
@@ -149,19 +142,14 @@ async function connectToWhatsApp() {
         }
         
         const context = {
-        sock,
-        msg,
-        text,
-        args,
-        commandName,
-        prefix,
-        sender,
-        isGroup,
-        isOwner,
-        chat: msg.key.remoteJid,
-        reply: (content) => sock.sendMessage(msg.key.remoteJid, { text: content }, { quoted: msg }),
-        db // Teruskan database agar plugin tidak perlu import ulang
-    };
+            sock,
+            commands,
+            msg, text, args, commandName, prefix, sender, isGroup, isOwner,
+            chat: msg.key.remoteJid,
+            reply: (content) => sock.sendMessage(msg.key.remoteJid, { text: content }, { quoted: msg }),
+            db,
+            settings
+        };
 
         try {
             await command.execute(context);
