@@ -1,0 +1,23 @@
+{
+  "name": "tensura-whatsapp-bot",
+  "version": "1.0.0",
+  "description": "A WhatsApp RPG Bot based on 'That Time I Got Reincarnated as a Slime' using Baileys.",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [
+    "whatsapp-bot",
+    "baileys",
+    "tensura",
+    "rpg"
+  ],
+  "author": "Yuzaki Network",
+  "license": "ISC",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.2",
+    "pino": "^9.1.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
