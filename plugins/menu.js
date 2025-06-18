@@ -1,21 +1,28 @@
 export default {
     name: 'Menu',
     command: ['menu', 'help'],
-    prefix: true,
+    permissions: 'all',
+    hidden: false,
     category: 'main',
+    cooldown: 5,
     description: 'Menampilkan menu perintah yang tersedia.',
-    async execute(msg, { sock, args, commands, prefix, settings }) {
+    async execute(m) {
+        const { commands, prefix, settings, args } = m;
         const botName = settings.botName;
-        const senderName = msg.pushName || 'Petualang';
+        const senderName = m.msg.pushName || 'Petualang';
         
         const categories = {};
-        commands.forEach(cmd => {
-            if (!categories[cmd.category]) {
-                categories[cmd.category] = [];
+        const processedCommands = new Set();
+        
+        commands.forEach(plugin => {
+            if (plugin.hidden || processedCommands.has(plugin.command[0])) {
+                return;
             }
-            if (cmd.command[0] === commands.get(cmd.command[0]).command[0]) {
-                categories[cmd.category].push(cmd);
+            if (!categories[plugin.category]) {
+                categories[plugin.category] = [];
             }
+            categories[plugin.category].push(plugin);
+            processedCommands.add(plugin.command[0]);
         });
         
         const requestedCategory = args[0]?.toLowerCase();
@@ -27,20 +34,22 @@ export default {
                 menuText += `› *${prefix}${cmd.command[0]}*\n  _${cmd.description || 'Tidak ada deskripsi'}_ \n\n`;
             });
         } else if (requestedCategory === 'all') {
+            menuText += `Berikut adalah semua perintah yang tersedia:\n\n`;
             Object.keys(categories).sort().forEach(category => {
                 menuText += `╭─「 *${category.toUpperCase()}* 」\n`;
-                menuText += categories[category].map(cmd => `│ › ${prefix}${cmd.command[0]}`).join('\n');
-                menuText += `\n╰────\n\n`;
+                const commandList = categories[category].map(cmd => `│ › ${prefix}${cmd.command[0]}`).join('\n');
+                menuText += `${commandList}\n`;
+                menuText += `╰────\n\n`;
             });
             menuText += `_Ketik ${prefix}menu <kategori> untuk detail._`;
         } else {
-            menuText += `Berikut adalah daftar kategori perintah:\n\n`;
+            menuText += `Berikut adalah daftar kategori perintah yang tersedia:\n\n`;
             Object.keys(categories).sort().forEach(category => {
                 menuText += `› *${category.toUpperCase()}*\n`;
             });
-            menuText += `\nKetik *${prefix}menu all* untuk melihat semua perintah.`;
+            menuText += `\nKetik *${prefix}menu all* untuk melihat semua perintah atau *${prefix}menu <kategori>* untuk detail spesifik.`;
         }
         
-        await sock.sendMessage(msg.key.remoteJid, { text: menuText.trim() }, { quoted: msg });
+        await m.reply(menuText.trim());
     }
 };
